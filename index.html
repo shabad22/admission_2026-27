@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>LKC College Dashboard</title>
+        <link rel="stylesheet" href="css/style.css" />
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    </head>
+    <body>
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="assets/images/LKC-Logo.png" alt="LKC" class="logo-img" />
+                <div class="sidebar-title">
+                    <h2>Lyallpur Khalsa<br />College, Jalandhar</h2>
+                    <span class="sidebar-session">Session 2026–27</span>
+                </div>
+            </div>
+            <div class="nav">
+                <button class="nav-btn active" data-page="dashboard">
+                    Dashboard
+                </button>
+                <div class="nav-divider">Departments</div>
+                <div id="dept-list"></div>
+            </div>
+            <div class="sidebar-footer">
+                <div class="visitor-counter">
+                    <div class="visitor-stat">
+                        <span class="visitor-icon">&#x1F441;</span>
+                        <span class="visitor-num" id="today-visitors" data-prev="0">0</span>
+                        <span class="visitor-label">Today</span>
+                    </div>
+                    <div class="visitor-stat">
+                        <span class="visitor-icon">&#x1F4CA;</span>
+                        <span class="visitor-num" id="total-visitors" data-prev="0">0</span>
+                        <span class="visitor-label">Total</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="topbar">
+                <button
+                    class="menu-toggle"
+                    id="menu-toggle"
+                    aria-label="Toggle menu"
+                >
+                    &#9776;
+                </button>
+                <span id="breadcrumb">Dashboard</span>
+                <input id="search-dept" placeholder="Search department..." />
+            </div>
+            <div id="content"></div>
+            <iframe id="frame" style="display: none"></iframe>
+        </div>
+        <script src="js/utils.js"></script>
+        <script src="js/api.js"></script>
+        <script src="js/visitor.js"></script>
+        <script src="js/dashboard.js"></script>
+        <script src="js/app.js"></script>
+    </body>
+</html>
