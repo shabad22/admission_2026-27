@@ -442,6 +442,8 @@ body {
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
+.sortable-header { cursor: pointer; user-select: none; }
+.sortable-header:hover { color: var(--primary); }
 .student-header {
   display: grid;
   grid-template-columns: 130px 1fr 100px;

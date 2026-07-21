@@ -1,6 +1,6 @@
 (function () {
   var students = [];
-  var state = { view: 'dashboard', dept: null, course: null };
+  var state = { view: 'dashboard', dept: null, course: null, sortCol: null, sortDir: null };
   var main, searchInput, searchDropdown, backBtn;
 
   function init() {
@@ -213,6 +213,29 @@
   /* ══════ COURSE VIEW ══════ */
   function renderCourse() {
     var list = getStudentList(state.dept, state.course);
+    state.sortCol = null;
+    state.sortDir = null;
+    renderSortedCourse(list);
+  }
+
+  function renderSortedCourse(list) {
+    var sortCol = state.sortCol;
+    var sortDir = state.sortDir;
+
+    if (sortCol) {
+      list = list.slice().sort(function (a, b) {
+        var va = a[sortCol], vb = b[sortCol];
+        if (va < vb) return sortDir === 'asc' ? -1 : 1;
+        if (va > vb) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    function th(label, col) {
+      var arrow = sortCol === col ? (sortDir === 'asc' ? ' &#9650;' : ' &#9660;') : '';
+      return '<span class="sortable-header" data-col="' + col + '">' + label + arrow + '</span>';
+    }
+
     main.innerHTML =
       '<div class="section-top">' +
       '<h2 class="page-title">' + escapeHtml(state.course) + '</h2>' +
@@ -220,8 +243,8 @@
       '</div>' +
       '<div class="student-list">' +
       '<div class="student-header">' +
-      '<span>Roll Number</span>' +
-      '<span>Student Name</span>' +
+      th('Roll Number', 'roll') +
+      th('Student Name', 'name') +
       '<span>Gender</span>' +
       '</div>' +
       list.map(function (s) {
@@ -232,6 +255,19 @@
           '</div>';
       }).join('') +
       '</div>';
+
+    main.querySelectorAll('.sortable-header').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var col = el.getAttribute('data-col');
+        if (state.sortCol === col) {
+          state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          state.sortCol = col;
+          state.sortDir = 'asc';
+        }
+        renderSortedCourse(getStudentList(state.dept, state.course));
+      });
+    });
   }
 
   /* ══════ NAVIGATION ══════ */
