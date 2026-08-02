@@ -1,0 +1,13 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/attendance/*"
+  to = "/.netlify/functions/attendance/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/attendance"
+  to = "/.netlify/functions/attendance"
+  status = 200
