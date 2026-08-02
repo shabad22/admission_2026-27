@@ -29,7 +29,17 @@
       }
     });
 
-    render();
+    window.LKCAdmin = {
+      showDashboard: function () {
+        state.view = 'dashboard';
+        state.dept = null;
+        state.course = null;
+        searchInput.value = '';
+        searchDropdown.innerHTML = '';
+        searchDropdown.classList.remove('active');
+        render();
+      }
+    };
   }
 
   function getDepartments() {
