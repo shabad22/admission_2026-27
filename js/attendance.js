@@ -10,18 +10,10 @@
   var LS_SESSION = 'lkcTeacherSession';
   var LS_ATT = 'lkcAttendance';
 
-  function pad(n) { return n < 10 ? '0' + n : String(n); }
-
-  function todayStr() {
-    var d = new Date();
-    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
-  }
-
-  function esc(str) {
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-
-  function getMain() { return document.getElementById('main-content'); }
+  var pad = window.LKCUtil.pad;
+  var todayStr = window.LKCUtil.todayStr;
+  var esc = window.LKCUtil.esc;
+  var getMain = window.LKCUtil.getMain;
 
   /* ══════ INIT ══════ */
   function init() {

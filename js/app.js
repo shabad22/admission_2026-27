@@ -2,6 +2,8 @@
   var students = [];
   var state = { view: 'dashboard', dept: null, course: null, sortCol: null, sortDir: null };
   var main, searchInput, searchDropdown, backBtn;
+  var esc = window.LKCUtil.esc;
+  var searchTimer = null;
 
   function init() {
     main = document.getElementById('main-content');
@@ -15,7 +17,10 @@
     }
 
     backBtn.addEventListener('click', goBack);
-    searchInput.addEventListener('input', onSearchInput);
+    searchInput.addEventListener('input', function () {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(onSearchInput, 200);
+    });
     searchInput.addEventListener('focus', onSearchFocus);
     document.addEventListener('click', function (e) {
       if (!e.target.closest('.search-container')) {
@@ -42,12 +47,6 @@
     };
   }
 
-  function getDepartments() {
-    var map = {};
-    students.forEach(function (s) { map[s.dept] = (map[s.dept] || 0) + 1; });
-    return Object.keys(map).sort().map(function (d) { return { name: d, count: map[d] }; });
-  }
-
   function getCourses(dept) {
     var map = {};
     students.forEach(function (s) {
@@ -60,42 +59,6 @@
     return students.filter(function (s) { return s.dept === dept && s.course === course; });
   }
 
-  function getSessionCounts() {
-    var map = {};
-    students.forEach(function (s) {
-      var roll = String(s.roll);
-      var match = roll.match(/^(\d{2})/);
-      if (match) {
-        var p = match[1];
-        var yr = Number(p);
-        var session = '20' + p + '-' + (yr + 1);
-        map[session] = (map[session] || 0) + 1;
-      }
-    });
-    var sorted = {};
-    Object.keys(map).sort().forEach(function (k) { sorted[k] = map[k]; });
-    return sorted;
-  }
-
-  function getGenderCounts() {
-    var m = 0, f = 0;
-    students.forEach(function (s) {
-      if (s.gender === 'M' || s.gender === 'Male') m++;
-      else if (s.gender === 'F' || s.gender === 'Female') f++;
-    });
-    return { male: m, female: f, total: m + f };
-  }
-
-  function escapeHtml(str) {
-    return String(str).replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
-
-  function getUniqueCourseCount() {
-    var map = {};
-    students.forEach(function (s) { map[s.course] = true; });
-    return Object.keys(map).length;
-  }
-
   function render() {
     if (state.view === 'dashboard') renderDashboard();
     else if (state.view === 'department') renderDepartment();
@@ -105,15 +68,31 @@
 
   /* ══════ DASHBOARD ══════ */
   function renderDashboard() {
-    var depts = getDepartments();
-    var gender = getGenderCounts();
-    var sessions = getSessionCounts();
+    var deptMap = {}, courseSet = {}, sessionMap = {}, male = 0, female = 0;
+    for (var i = 0; i < students.length; i++) {
+      var s = students[i];
+      deptMap[s.dept] = (deptMap[s.dept] || 0) + 1;
+      courseSet[s.course] = 1;
+      if (s.gender === 'M' || s.gender === 'Male') male++;
+      else if (s.gender === 'F' || s.gender === 'Female') female++;
+      var match = String(s.roll).match(/^(\d{2})/);
+      if (match) {
+        var yr = Number(match[1]);
+        var sess = '20' + match[1] + '-' + (yr + 1);
+        sessionMap[sess] = (sessionMap[sess] || 0) + 1;
+      }
+    }
+
+    var depts = Object.keys(deptMap).sort().map(function (d) { return { name: d, count: deptMap[d] }; });
+    var sessions = {};
+    Object.keys(sessionMap).sort().forEach(function (k) { sessions[k] = sessionMap[k]; });
     var sessionKeys = Object.keys(sessions).reverse();
     var maxSession = sessionKeys.length ? sessions[sessionKeys[0]] : 1;
-    var totalCourses = getUniqueCourseCount();
+    var totalCourses = Object.keys(courseSet).length;
     var totalDepts = depts.length;
+    var total = male + female;
 
-    var genderPctM = gender.total ? Math.round(gender.male / gender.total * 100) : 0;
+    var genderPctM = total ? Math.round(male / total * 100) : 0;
     var genderPctF = 100 - genderPctM;
     var donutDeg = genderPctM * 3.6;
 
@@ -146,11 +125,11 @@
           '<div class="chart-card-title">Gender Distribution</div>' +
           '<div class="gender-chart">' +
             '<div class="gender-ring" style="background: conic-gradient(#3b82f6 0deg ' + donutDeg + 'deg, #f472b6 ' + donutDeg + 'deg 360deg)">' +
-              '<div class="gender-ring-inner">' + gender.total + '</div>' +
+              '<div class="gender-ring-inner">' + total + '</div>' +
             '</div>' +
             '<div class="gender-legend">' +
-              '<div class="gender-item"><span class="gender-dot male"></span> Male <span class="gender-count">' + gender.male + '</span><span class="gender-pct">' + genderPctM + '%</span></div>' +
-              '<div class="gender-item"><span class="gender-dot female"></span> Female <span class="gender-count">' + gender.female + '</span><span class="gender-pct">' + genderPctF + '%</span></div>' +
+              '<div class="gender-item"><span class="gender-dot male"></span> Male <span class="gender-count">' + male + '</span><span class="gender-pct">' + genderPctM + '%</span></div>' +
+              '<div class="gender-item"><span class="gender-dot female"></span> Female <span class="gender-count">' + female + '</span><span class="gender-pct">' + genderPctF + '%</span></div>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -160,8 +139,8 @@
       '<div class="dept-grid">' +
       depts.map(function (d) {
         var barPct = Math.round(d.count / students.length * 100);
-        return '<div class="dept-card" data-dept="' + escapeHtml(d.name) + '">' +
-          '<div class="dept-name">' + escapeHtml(d.name) + '</div>' +
+        return '<div class="dept-card" data-dept="' + esc(d.name) + '">' +
+          '<div class="dept-name">' + esc(d.name) + '</div>' +
           '<div class="dept-count"><strong>' + d.count + '</strong> students</div>' +
           '<div class="dept-bar-mini"><div class="dept-bar-mini-fill" style="width:' + barPct + '%"></div></div>' +
           '</div>';
@@ -199,13 +178,13 @@
     var total = courses.reduce(function (s, c) { return s + c.count; }, 0);
     main.innerHTML =
       '<div class="section-top">' +
-      '<h2 class="page-title">' + escapeHtml(state.dept) + '</h2>' +
+      '<h2 class="page-title">' + esc(state.dept) + '</h2>' +
       '<p class="page-subtitle">' + total + ' students &middot; ' + courses.length + ' programs</p>' +
       '</div>' +
       '<div class="course-grid">' +
       courses.map(function (c) {
-        return '<div class="course-card" data-course="' + escapeHtml(c.name) + '">' +
-          '<div class="course-name">' + escapeHtml(c.name) + '</div>' +
+        return '<div class="course-card" data-course="' + esc(c.name) + '">' +
+          '<div class="course-name">' + esc(c.name) + '</div>' +
           '<div class="course-count"><strong>' + c.count + '</strong> students</div>' +
           '</div>';
       }).join('') +
@@ -248,7 +227,7 @@
 
     main.innerHTML =
       '<div class="section-top">' +
-      '<h2 class="page-title">' + escapeHtml(state.course) + '</h2>' +
+      '<h2 class="page-title">' + esc(state.course) + '</h2>' +
       '<p class="page-subtitle">' + list.length + ' students enrolled</p>' +
       '</div>' +
       '<div class="student-list">' +
@@ -259,9 +238,9 @@
       '</div>' +
       list.map(function (s) {
         return '<div class="student-row">' +
-          '<span class="col-roll">' + escapeHtml(s.roll) + '</span>' +
-          '<span class="col-name">' + escapeHtml(s.name) + '</span>' +
-          '<span class="col-gender">' + (s.gender === 'M' ? 'Male' : s.gender === 'F' ? 'Female' : escapeHtml(s.gender)) + '</span>' +
+          '<span class="col-roll">' + esc(s.roll) + '</span>' +
+          '<span class="col-name">' + esc(s.name) + '</span>' +
+          '<span class="col-gender">' + (s.gender === 'M' ? 'Male' : s.gender === 'F' ? 'Female' : esc(s.gender)) + '</span>' +
           '</div>';
       }).join('') +
       '</div>';
@@ -323,10 +302,10 @@
       for (var i = 0; i < limit; i++) {
         var s = matches[i];
         html +=
-          '<div class="search-item" data-dept="' + escapeHtml(s.dept) + '" data-course="' + escapeHtml(s.course) + '">' +
-          '<span class="sr-roll">' + escapeHtml(s.roll) + '</span>' +
-          '<span class="sr-name">' + escapeHtml(s.name) + '</span>' +
-          '<span class="sr-course">' + escapeHtml(s.course) + '</span>' +
+          '<div class="search-item" data-dept="' + esc(s.dept) + '" data-course="' + esc(s.course) + '">' +
+          '<span class="sr-roll">' + esc(s.roll) + '</span>' +
+          '<span class="sr-name">' + esc(s.name) + '</span>' +
+          '<span class="sr-course">' + esc(s.course) + '</span>' +
           '</div>';
       }
       if (matches.length > limit) {

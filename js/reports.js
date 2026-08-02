@@ -3,6 +3,13 @@
   var teachers = [];
   var searchContainer, backBtn, reportsBtn;
 
+  var pad = window.LKCUtil.pad;
+  var toStr = window.LKCUtil.toStr;
+  var todayStr = window.LKCUtil.todayStr;
+  var esc = window.LKCUtil.esc;
+  var getMain = window.LKCUtil.getMain;
+  function fmtPct(n) { return isFinite(n) ? n.toFixed(1) + '%' : '—'; }
+
   var state = {
     active: false,
     tab: 'summary',
@@ -14,15 +21,6 @@
     course: '',
     subject: ''
   };
-
-  function pad(n) { return n < 10 ? '0' + n : String(n); }
-  function toStr(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
-  function todayStr() { return toStr(new Date()); }
-  function esc(str) {
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-  function fmtPct(n) { return isFinite(n) ? n.toFixed(1) + '%' : '—'; }
-  function getMain() { return document.getElementById('main-content'); }
 
   /* ══════ INIT ══════ */
   function init() {
@@ -140,9 +138,10 @@
     return dayRange(state.period, state.period === 'monthly' ? state.month + '-01' : state.date);
   }
 
-  function filteredLectures() {
+  function filteredLectures(all) {
+    all = all || allLectures();
     var range = currentRange();
-    var recs = allLectures().filter(function (r) {
+    var recs = all.filter(function (r) {
       if (r.date < range.start || r.date > range.end) return false;
       if (state.teacher && r.teacher !== state.teacher) return false;
       if (state.dept && r.dept !== state.dept) return false;
@@ -196,9 +195,9 @@
     return Object.keys(set).sort();
   }
 
-  function subjectOptions() {
+  function subjectOptions(all) {
     var set = {};
-    allLectures().forEach(function (l) {
+    (all || allLectures()).forEach(function (l) {
       if (state.teacher && l.teacher !== state.teacher) return;
       if (state.dept && l.dept !== state.dept) return;
       if (state.course && l.course !== state.course) return;
@@ -225,7 +224,9 @@
       return '<option value="' + esc(c) + '"' + (state.course === c ? ' selected' : '') + '>' + esc(c) + '</option>';
     }).join('');
 
-    var sOpts = '<option value="">All Subjects</option>' + subjectOptions().map(function (s) {
+    var all = allLectures();
+
+    var sOpts = '<option value="">All Subjects</option>' + subjectOptions(all).map(function (s) {
       return '<option value="' + esc(s) + '"' + (state.subject === s ? ' selected' : '') + '>' + esc(s) + '</option>';
     }).join('');
 
@@ -283,9 +284,9 @@
 
       '<div id="report-content" class="report-content"></div>';
 
-    var recs = filteredLectures();
+    var recs = filteredLectures(all);
 
-    if (state.tab === 'summary') renderSummary(document.getElementById('report-content'), recs);
+    if (state.tab === 'summary') renderSummary(document.getElementById('report-content'), recs, all);
     else if (state.tab === 'student') renderStudent(document.getElementById('report-content'), recs);
     else renderLecture(document.getElementById('report-content'), recs);
 
@@ -316,19 +317,16 @@
   }
 
   /* ══════ SUMMARY ══════ */
-  function renderSummary(el, recs) {
+  function renderSummary(el, recs, all) {
     var today = todayStr();
     var wR = dayRange('weekly', today);
     var mR = dayRange('monthly', today.slice(0, 7));
-    var all = allLectures();
+    all = all || allLectures();
     function inRange(l, s, e) { return l.date >= s && l.date <= e; }
+    function teacherBlocked(l) { return state.teacher && l.teacher !== state.teacher; }
     var todays = all.filter(function (l) { return l.date === today && !teacherBlocked(l); }).length;
     var weeks = all.filter(function (l) { return inRange(l, wR.start, wR.end) && !teacherBlocked(l); }).length;
     var months = all.filter(function (l) { return inRange(l, mR.start, mR.end) && !teacherBlocked(l); }).length;
-
-    function teacherBlocked(l) {
-      return state.teacher && l.teacher !== state.teacher;
-    }
 
     var t = 0, p = 0, a = 0;
     recs.forEach(function (l) { var c = lectureCounts(l); t += c.t; p += c.p; a += c.a; });
