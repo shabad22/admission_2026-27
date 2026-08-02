@@ -17,6 +17,7 @@ var fs = require('fs');
 var path = require('path');
 
 var PORT = process.env.PORT || 3000;
+var HOST = process.env.HOST || '0.0.0.0';
 var ROOT = path.resolve(__dirname);
 var DATA_FILE = path.join(ROOT, 'data', 'attendance-store.json');
 
@@ -63,6 +64,16 @@ function sendJson(res, code, obj) {
 }
 
 var server = http.createServer(function (req, res) {
+  /* CORS so the app can be served from a different origin than the API. */
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
   var pathname = decodeURIComponent((req.url || '/').split('?')[0]);
 
   if (pathname === '/api/attendance' && req.method === 'GET') {
@@ -105,7 +116,7 @@ var server = http.createServer(function (req, res) {
   });
 });
 
-server.listen(PORT, function () {
-  console.log('LKC College app: http://localhost:' + PORT);
+server.listen(PORT, HOST, function () {
+  console.log('LKC College app: http://' + HOST + ':' + PORT);
   console.log('Attendance store: ' + DATA_FILE);
 });

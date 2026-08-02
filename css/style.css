@@ -790,6 +790,27 @@ button { font-family: inherit; }
   border-radius: var(--radius);
 }
 
+/* Local-only storage notice */
+.storage-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.storage-warning code {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
 /* ══════ RESPONSIVE ══════ */
 
 /* Tablet landscape & smaller desktops */

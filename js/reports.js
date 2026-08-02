@@ -38,6 +38,11 @@
       if (state.active) renderReports();
     });
 
+    /* Re-render when server reachability changes (show/hide local-only notice). */
+    document.addEventListener('lkc:storage-status', function () {
+      if (state.active) renderReports();
+    });
+
     /* While reports are open, poll the shared store so saves made on other
        browsers/teachers appear without reopening. */
     setInterval(function () {
@@ -221,6 +226,15 @@
     if (!main) return;
     var range = currentRange();
 
+    var localOnly = window.LKCStorage && window.LKCStorage.isServerUp && window.LKCStorage.isServerUp() === false;
+    var localOnlyBanner = localOnly
+      ? '<div class="storage-warning">' +
+          '<strong>Local-only mode.</strong> No attendance server is reachable, so records shown here are only from this device/browser. ' +
+          'Records saved by other teachers or devices will not appear. Deploy and run <code>server.js</code> (and set the API in ' +
+          '<code>js/config.js</code>) to share data across everyone.' +
+        '</div>'
+      : '';
+
     var teacherOpts = '<option value="">All Teachers</option>' + teachers.map(function (t) {
       return '<option value="' + esc(t.name) + '"' + (state.teacher === t.name ? ' selected' : '') + '>' + esc(t.name) + '</option>';
     }).join('');
@@ -245,6 +259,7 @@
         '<h2 class="page-title">Attendance Reports</h2>' +
         '<p class="page-subtitle">LKC College &middot; Admissions 2026-27</p>' +
       '</div>' +
+      localOnlyBanner +
 
       '<div class="reports-filters">' +
         '<div class="rf-group">' +
