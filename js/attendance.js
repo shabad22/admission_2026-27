@@ -118,8 +118,8 @@
       '<div class="login-gate">' +
         '<div class="login-gate-card">' +
           '<div class="modal-logo"><img src="LKC-Logo.png" alt="LKC College" /></div>' +
-          '<h3 class="modal-title">Teacher Login</h3>' +
-          '<p class="modal-sub">LKC College &middot; Admissions 2026-27</p>' +
+          '<h3 class="modal-title">Sign in to Attendance</h3>' +
+          '<p class="modal-sub">Enter your Teacher ID and password</p>' +
           '<form id="login-form" novalidate>' +
             '<label class="field-label" for="login-id">Teacher ID</label>' +
             '<input class="field-input" id="login-id" type="text" autocomplete="username" placeholder="e.g. MSL" />' +

@@ -76,7 +76,8 @@ window.LKCUtil = {
     var root = document.documentElement;
     root.classList.remove('theme-light', 'theme-dark');
     if (theme === 'system') {
-      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var prefersDark = false;
+      try { prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) {}
       if (prefersDark) root.classList.add('theme-dark');
     } else if (theme === 'dark') {
       root.classList.add('theme-dark');
@@ -107,8 +108,12 @@ window.LKCUtil = {
       });
     }
     // Listen for system preference changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
-      if (window.LKCUtil.getTheme() === 'system') window.LKCUtil.applyTheme('system');
-    });
+    try {
+      if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+          if (window.LKCUtil.getTheme() === 'system') window.LKCUtil.applyTheme('system');
+        });
+      }
+    } catch (e) {}
   }
 };

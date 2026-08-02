@@ -71,6 +71,9 @@
     var s = getSession();
     if (!s) return;
     
+    // Only MSL (admin) can access reports
+    if (s.id !== 'MSL') return;
+    
     state.active = true;
     state.tab = 'summary';
     state.period = 'daily';
@@ -80,13 +83,7 @@
     state.dept = '';
     state.course = '';
     state.subject = '';
-    state.isAdmin = (s.id === 'MSL');
-    
-    // For teachers, set allowed classes and auto-filter to their name
-    if (!state.isAdmin) {
-      state.allowedClasses = (s.classes || []).map(function (c) { return c.dept + '|' + c.course; });
-      state.teacher = s.name;
-    }
+    state.isAdmin = true;
     
     if (searchContainer) searchContainer.style.display = 'none';
     if (backBtn) backBtn.style.display = 'none';
