@@ -177,8 +177,18 @@
   function lectureCounts(l) {
     var p = 0, a = 0, lv = 0;
     var rolls = l.rolls;
-    if (Array.isArray(rolls)) {
+    if (!rolls) return { p: 0, a: 0, l: 0, t: 0 };
+    if (typeof rolls === 'string') {
+      rolls.split(',').forEach(function (pair) {
+        var v = pair.split(':')[1];
+        if (!v) return;
+        if (v === 'A') a++;
+        else if (v === 'L') lv++;
+        else p++;
+      });
+    } else if (Array.isArray(rolls)) {
       rolls.forEach(function (pair) {
+        if (!pair || pair.length < 2) return;
         var v = pair[1];
         if (v === 'A') a++;
         else if (v === 'L') lv++;
@@ -506,8 +516,20 @@
     var per = {};
     lectures.forEach(function (l) {
       var rolls = l.rolls;
-      if (Array.isArray(rolls)) {
+      if (!rolls) return;
+      if (typeof rolls === 'string') {
+        rolls.split(',').forEach(function (pair) {
+          var parts = pair.split(':');
+          if (parts.length < 2) return;
+          var roll = parts[0], v = parts[1];
+          var st = per[roll] || (per[roll] = { p: 0, a: 0, l: 0 });
+          if (v === 'A') st.a++;
+          else if (v === 'L') st.l++;
+          else st.p++;
+        });
+      } else if (Array.isArray(rolls)) {
         rolls.forEach(function (pair) {
+          if (!pair || pair.length < 2) return;
           var roll = pair[0], v = pair[1];
           var st = per[roll] || (per[roll] = { p: 0, a: 0, l: 0 });
           if (v === 'A') st.a++;

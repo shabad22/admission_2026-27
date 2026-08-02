@@ -439,11 +439,12 @@
     var key = getClassKey(state.dept, state.course);
     if (!store[key]) store[key] = {};
     if (!store[key][state.date]) store[key][state.date] = {};
-    var rollsArr = [];
+    var rollsStr = '';
     var p = 0, a = 0, l = 0;
     list.forEach(function (s) {
       var v = state.statuses[s.roll] === 'A' ? 'A' : (state.statuses[s.roll] === 'L' ? 'L' : 'P');
-      rollsArr.push([s.roll, v]);
+      if (rollsStr) rollsStr += ',';
+      rollsStr += s.roll + ':' + v;
       if (v === 'A') a++;
       else if (v === 'L') l++;
       else p++;
@@ -453,7 +454,7 @@
       subject: slotSubject(state.slot, state.dept, state.course) || null,
       time: slotTime(state.slot),
       submittedAt: new Date().toISOString(),
-      rolls: rollsArr
+      rolls: rollsStr
     };
     if (!window.LKCStorage.put(store)) {
       window.alert('Could not save attendance (browser storage is full).');
