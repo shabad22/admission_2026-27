@@ -11,6 +11,10 @@
 
   var pad = window.LKCUtil.pad;
   var todayStr = window.LKCUtil.todayStr;
+  var todayIndianStr = window.LKCUtil.todayIndianStr;
+  var toIndianFromISO = window.LKCUtil.toIndianFromISO;
+  var toDisplayDate = window.LKCUtil.toDisplayDate;
+  var toInputDate = window.LKCUtil.toInputDate;
   var esc = window.LKCUtil.esc;
   var getMain = window.LKCUtil.getMain;
 
@@ -316,7 +320,7 @@
       '</div>' +
       '<div class="att-toolbar">' +
         '<label class="att-date-label" for="att-date">Date</label>' +
-        '<input type="date" id="att-date" class="field-input att-date-input" value="' + state.date + '" />' +
+        '<input type="date" id="att-date" class="field-input att-date-input" value="' + toInputDate(state.date) + '" />' +
         slotHtml +
         '<span class="att-summary" id="att-summary"></span>' +
         '<span class="att-spacer"></span>' +
@@ -462,7 +466,8 @@
       return;
     }
     var label = state.slot !== 'general' ? ' \u00b7 ' + state.slot : '';
-    var msg = 'Attendance saved for ' + state.date + label + ' \u00b7 Present: ' + p + ', Absent: ' + a + ', Leave: ' + l;
+    var displayDate = toDisplayDate(state.date);
+    var msg = 'Attendance saved for ' + displayDate + label + ' \u00b7 Present: ' + p + ', Absent: ' + a + ', Leave: ' + l;
     if (window.LKCStorage && window.LKCStorage.isServerUp && window.LKCStorage.isServerUp() === false) {
       msg += '  (Saved on this device only \u2014 server unreachable; other teachers won\u2019t see this. Deploy server.js to share data.)';
     }
@@ -476,7 +481,7 @@
         s.roll,
         s.name,
         statuses[s.roll] === 'A' ? 'Absent' : (statuses[s.roll] === 'L' ? 'Leave' : 'Present'),
-        state.date,
+        toDisplayDate(state.date),
         state.slot,
         slotSubject(state.slot, state.dept, state.course),
         state.course,
@@ -494,7 +499,7 @@
     var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
-    var fname = 'Attendance_' + (state.dept + '_' + state.course).replace(/[^\w]+/g, '_') + '_' + state.date + '.csv';    a.href = url;
+    var fname = 'Attendance_' + (state.dept + '_' + state.course).replace(/[^\w]+/g, '_') + '_' + state.date.replace(/\//g, '-') + '.csv';    a.href = url;
     a.download = fname;
     document.body.appendChild(a);
     a.click();

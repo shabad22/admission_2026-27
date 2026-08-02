@@ -6,6 +6,8 @@
   var pad = window.LKCUtil.pad;
   var toStr = window.LKCUtil.toStr;
   var todayStr = window.LKCUtil.todayStr;
+  var toDisplayDate = window.LKCUtil.toDisplayDate;
+  var toInputDate = window.LKCUtil.toInputDate;
   var esc = window.LKCUtil.esc;
   var getMain = window.LKCUtil.getMain;
   function fmtPct(n) { return isFinite(n) ? n.toFixed(1) + '%' : '—'; }
@@ -320,7 +322,7 @@
           '<label class="att-date-label">Subject</label>' +
           '<select id="r-subject" class="field-input">' + sOpts + '</select>' +
         '</div>' +
-        '<div class="rf-range">' + esc(range.start) + ' &rarr; ' + esc(range.end) + '</div>' +
+        '<div class="rf-range">' + esc(toDisplayDate(range.start)) + ' &rarr; ' + esc(toDisplayDate(range.end)) + '</div>' +
       '</div>' +
 
       '<div class="reports-tabs no-print">' +
@@ -581,7 +583,7 @@
         var c = lectureCounts(l);
         var pct = c.t ? c.p / c.t * 100 : 0;
         return '<div class="student-row rep-9">' +
-          '<span class="col-roll">' + esc(l.date) + '</span>' +
+          '<span class="col-roll">' + esc(toDisplayDate(l.date)) + '</span>' +
           '<span>' + esc((l.time || '').replace(/[()]/g, '')) + '</span>' +
           '<span class="col-name">' + esc(l.teacher || '—') + '</span>' +
           '<span>' + esc(l.course) + ' <span class="rep-dept">' + esc(l.dept) + '</span></span>' +
@@ -612,7 +614,7 @@
         '@media print{body{display:block;}}' +
       '</style></head><body>' +
       '<h1>Attendance Report</h1>' +
-      '<p>' + esc(range.start) + ' &rarr; ' + esc(range.end) +
+      '<p>' + esc(toDisplayDate(range.start)) + ' &rarr; ' + esc(toDisplayDate(range.end)) +
       (state.teacher ? ' &middot; ' + esc(state.teacher) : '') +
       (state.course ? ' &middot; ' + esc(state.course) : '') +
       (state.subject ? ' &middot; ' + esc(state.subject) : '') + '</p>' +
@@ -628,7 +630,7 @@
     var range = currentRange();
     var recs = filteredLectures();
     var rows = [['LKC College - Attendance Report', '', '', '', '', '', '', '']];
-    rows.push(['Period', state.period.charAt(0).toUpperCase() + state.period.slice(1), range.start + ' to ' + range.end, state.teacher, state.dept, state.course, state.subject, '']);
+    rows.push(['Period', state.period.charAt(0).toUpperCase() + state.period.slice(1), toDisplayDate(range.start) + ' to ' + toDisplayDate(range.end), state.teacher, state.dept, state.course, state.subject, '']);
     rows.push(['']);
 
     if (state.tab === 'summary') {
@@ -659,7 +661,7 @@
       recs.forEach(function (l) {
         var c = lectureCounts(l);
         var pct = c.t ? (c.p / c.t * 100).toFixed(1) + '%' : '—';
-        rows.push([l.date, (l.time || '').replace(/[()]/g, ''), l.teacher || '—', l.course, l.dept, l.subject || '—', c.p, c.a, c.l, c.t, pct]);
+        rows.push([toDisplayDate(l.date), (l.time || '').replace(/[()]/g, ''), l.teacher || '—', l.course, l.dept, l.subject || '—', c.p, c.a, c.l, c.t, pct]);
       });
     }
 
@@ -674,7 +676,7 @@
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
-    a.download = 'Attendance_Report_' + state.period + '_' + range.start + '.csv';
+    a.download = 'Attendance_Report_' + state.period + '_' + range.start.replace(/\//g, '-') + '.csv';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
