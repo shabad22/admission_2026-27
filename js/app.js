@@ -100,8 +100,8 @@
     var donutDeg = genderPctM * 3.6;
 
     var html =
-      '<h2 class="dashboard-title">Admissions Dashboard</h2>' +
-      '<p class="dashboard-subtitle">' + students.length + ' total students enrolled for 2026-27</p>' +
+      '<h2 class="dashboard-title">Attendance System</h2>' +
+      '<p class="dashboard-subtitle">' + students.length + ' total students enrolled</p>' +
 
       '<div class="stats-row">' +
         statCard('Users', students.length, 'blue') +

@@ -118,7 +118,7 @@
       '<div class="login-gate">' +
         '<div class="login-gate-card">' +
           '<div class="modal-logo"><img src="LKC-Logo.png" alt="LKC College" /></div>' +
-          '<h3 class="modal-title">Teacher Attendance System</h3>' +
+          '<h3 class="modal-title">Attendance Portal</h3>' +
           '<p class="modal-sub">Sign in to access your assigned classes and mark student attendance.</p>' +
           '<form id="login-form" novalidate>' +
             '<label class="field-label" for="login-id">Teacher ID</label>' +

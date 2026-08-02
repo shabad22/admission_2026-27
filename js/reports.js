@@ -300,7 +300,7 @@
       '<div class="section-top">' +
         '<button type="button" class="btn-secondary btn-sm" id="reports-close">&larr; Back</button>' +
         '<h2 class="page-title">Attendance Reports</h2>' +
-        '<p class="page-subtitle">LKC College &middot; Admissions 2026-27</p>' +
+        '<p class="page-subtitle">LKC College &middot; Attendance System</p>' +
       '</div>' +
       localOnlyBanner +
 
