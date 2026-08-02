@@ -467,11 +467,13 @@
     }
     var label = state.slot !== 'general' ? ' \u00b7 ' + state.slot : '';
     var displayDate = toDisplayDate(state.date);
-    var msg = 'Attendance saved for ' + displayDate + label + ' \u00b7 Present: ' + p + ', Absent: ' + a + ', Leave: ' + l;
+    var msg = 'Attendance saved for ' + displayDate + label + '\n\nPresent: ' + p + '\nAbsent: ' + a + '\nLeave: ' + l;
     if (window.LKCStorage && window.LKCStorage.isServerUp && window.LKCStorage.isServerUp() === false) {
-      msg += '  (Saved on this device only \u2014 server unreachable; other teachers won\u2019t see this. Deploy server.js to share data.)';
+      msg += '\n\n(Saved on this device only \u2014 server unreachable; other teachers won\u2019t see this. Deploy server.js to share data.)';
     }
-    toast(msg);
+    if (window.confirm(msg)) {
+      backToClasses();
+    }
   }
 
   function exportCsv(list, statuses) {
