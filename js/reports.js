@@ -31,6 +31,18 @@
     backBtn = document.getElementById('back-btn');
 
     if (reportsBtn) reportsBtn.addEventListener('click', openReports);
+
+    /* Re-render reports immediately whenever attendance data changes
+       (this tab's saves, other tabs, or server sync). */
+    document.addEventListener('lkc:attendance-changed', function () {
+      if (state.active) renderReports();
+    });
+
+    /* While reports are open, poll the shared store so saves made on other
+       browsers/teachers appear without reopening. */
+    setInterval(function () {
+      if (state.active && window.LKCStorage) window.LKCStorage.refresh();
+    }, 10000);
   }
 
   function getSession() {
@@ -73,10 +85,7 @@
 
   /* ══════ DATA ══════ */
   function getStore() {
-    try {
-      var raw = localStorage.getItem('lkcAttendance');
-      return raw ? JSON.parse(raw) : {};
-    } catch (e) { return {}; }
+    return window.LKCStorage.get();
   }
 
   function isLegacyDay(day) {

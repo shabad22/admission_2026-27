@@ -8,7 +8,6 @@
   var adminMode = false;
 
   var LS_SESSION = 'lkcTeacherSession';
-  var LS_ATT = 'lkcAttendance';
 
   var pad = window.LKCUtil.pad;
   var todayStr = window.LKCUtil.todayStr;
@@ -211,10 +210,7 @@
 
   /* ══════ ATTENDANCE SHEET ══════ */
   function getAttendanceStore() {
-    try {
-      var raw = localStorage.getItem(LS_ATT);
-      return raw ? JSON.parse(raw) : {};
-    } catch (e) { return {}; }
+    return window.LKCStorage.get();
   }
 
   function getClassKey(dept, course) { return dept + '|' + course; }
@@ -443,9 +439,7 @@
       time: slotTime(state.slot),
       rolls: rec
     };
-    try {
-      localStorage.setItem(LS_ATT, JSON.stringify(store));
-    } catch (e) {
+    if (!window.LKCStorage.put(store)) {
       window.alert('Could not save attendance (browser storage is full).');
       return;
     }
