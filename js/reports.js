@@ -176,11 +176,22 @@
 
   function lectureCounts(l) {
     var p = 0, a = 0, lv = 0;
-    Object.keys(l.rolls).forEach(function (roll) {
-      if (l.rolls[roll] === 'A') a++;
-      else if (l.rolls[roll] === 'L') lv++;
-      else p++;
-    });
+    var rolls = l.rolls;
+    if (Array.isArray(rolls)) {
+      rolls.forEach(function (pair) {
+        var v = pair[1];
+        if (v === 'A') a++;
+        else if (v === 'L') lv++;
+        else p++;
+      });
+    } else {
+      Object.keys(rolls).forEach(function (roll) {
+        var v = rolls[roll];
+        if (v === 'A') a++;
+        else if (v === 'L') lv++;
+        else p++;
+      });
+    }
     return { p: p, a: a, l: lv, t: p + a + lv };
   }
 
@@ -494,12 +505,24 @@
   function studentDetails(dept, course, lectures) {
     var per = {};
     lectures.forEach(function (l) {
-      Object.keys(l.rolls).forEach(function (roll) {
-        var st = per[roll] || (per[roll] = { p: 0, a: 0, l: 0 });
-        if (l.rolls[roll] === 'A') st.a++;
-        else if (l.rolls[roll] === 'L') st.l++;
-        else st.p++;
-      });
+      var rolls = l.rolls;
+      if (Array.isArray(rolls)) {
+        rolls.forEach(function (pair) {
+          var roll = pair[0], v = pair[1];
+          var st = per[roll] || (per[roll] = { p: 0, a: 0, l: 0 });
+          if (v === 'A') st.a++;
+          else if (v === 'L') st.l++;
+          else st.p++;
+        });
+      } else {
+        Object.keys(rolls).forEach(function (roll) {
+          var v = rolls[roll];
+          var st = per[roll] || (per[roll] = { p: 0, a: 0, l: 0 });
+          if (v === 'A') st.a++;
+          else if (v === 'L') st.l++;
+          else st.p++;
+        });
+      }
     });
     var list = students.filter(function (s) { return s.dept === dept && s.course === course; })
       .sort(function (x, y) { return x.roll < y.roll ? -1 : 1; });
