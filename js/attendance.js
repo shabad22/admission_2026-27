@@ -118,15 +118,15 @@
       '<div class="login-gate">' +
         '<div class="login-gate-card">' +
           '<div class="modal-logo"><img src="LKC-Logo.png" alt="LKC College" /></div>' +
-          '<h3 class="modal-title">Sign in to Attendance</h3>' +
-          '<p class="modal-sub">Enter your Teacher ID and password</p>' +
+          '<h3 class="modal-title">Teacher Attendance System</h3>' +
+          '<p class="modal-sub">Sign in to access your assigned classes and mark student attendance.</p>' +
           '<form id="login-form" novalidate>' +
             '<label class="field-label" for="login-id">Teacher ID</label>' +
             '<input class="field-input" id="login-id" type="text" autocomplete="username" placeholder="e.g. MSL" />' +
             '<label class="field-label" for="login-password">Password</label>' +
             '<input class="field-input" id="login-password" type="password" autocomplete="current-password" placeholder="Password" />' +
             '<div class="login-error" id="login-error"></div>' +
-            '<button type="submit" class="btn-primary btn-login">Login</button>' +
+            '<button type="submit" class="btn-primary btn-login">Sign In</button>' +
           '</form>' +
         '</div>' +
       '</div>';
