@@ -21,7 +21,9 @@
     teacher: '',
     dept: '',
     course: '',
-    subject: ''
+    subject: '',
+    isAdmin: false,
+    allowedClasses: []  // for teachers: list of {dept, course} they can access
   };
 
   /* ══════ INIT ══════ */
@@ -67,7 +69,8 @@
   /* ══════ OPEN / CLOSE ══════ */
   function openReports() {
     var s = getSession();
-    if (!s || s.id !== 'MSL') return;
+    if (!s) return;
+    
     state.active = true;
     state.tab = 'summary';
     state.period = 'daily';
@@ -77,6 +80,14 @@
     state.dept = '';
     state.course = '';
     state.subject = '';
+    state.isAdmin = (s.id === 'MSL');
+    
+    // For teachers, set allowed classes and auto-filter to their name
+    if (!state.isAdmin) {
+      state.allowedClasses = (s.classes || []).map(function (c) { return c.dept + '|' + c.course; });
+      state.teacher = s.name;
+    }
+    
     if (searchContainer) searchContainer.style.display = 'none';
     if (backBtn) backBtn.style.display = 'none';
     renderReports();
@@ -160,6 +171,13 @@
     var range = currentRange();
     var recs = all.filter(function (r) {
       if (r.date < range.start || r.date > range.end) return false;
+      
+      // For non-admin teachers, restrict to their allowed classes
+      if (!state.isAdmin) {
+        var classKey = r.dept + '|' + r.course;
+        if (state.allowedClasses.indexOf(classKey) === -1) return false;
+      }
+      
       if (state.teacher && r.teacher !== state.teacher) return false;
       if (state.dept && r.dept !== state.dept) return false;
       if (state.course && r.course !== state.course) return false;

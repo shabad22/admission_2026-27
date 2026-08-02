@@ -421,6 +421,29 @@ input, select, textarea { font-family: inherit; }
 .btn-lg { padding: var(--space-3) var(--space-6); font-size: var(--text-base); height: 48px; }
 .btn-block { width: 100%; }
 
+/* Login page button - more prominent and professional */
+.btn-login {
+  width: 100%;
+  height: 52px;
+  font-size: var(--text-base);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+.btn-login::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+.btn-login:hover:not(:disabled)::before { left: 100%; }
+.btn-login:active:not(:disabled) { transform: scale(0.98); }
+
 .btn-icon { width: 44px; height: 44px; padding: 0; border-radius: var(--radius); }
 .btn-icon-sm { width: 36px; height: 36px; }
 

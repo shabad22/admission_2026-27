@@ -126,7 +126,7 @@
             '<label class="field-label" for="login-password">Password</label>' +
             '<input class="field-input" id="login-password" type="password" autocomplete="current-password" placeholder="Password" />' +
             '<div class="login-error" id="login-error"></div>' +
-            '<button type="submit" class="btn-primary btn-block">Login</button>' +
+            '<button type="submit" class="btn-primary btn-login">Login</button>' +
           '</form>' +
         '</div>' +
       '</div>';
