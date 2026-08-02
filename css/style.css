@@ -668,8 +668,11 @@ button { font-family: inherit; }
 .att-btn:hover { border-color: #94a3b8; }
 .att-btn.present.active { background: var(--success); border-color: var(--success); color: #ffffff; }
 .att-btn.absent.active { background: var(--danger); border-color: var(--danger); color: #ffffff; }
+.att-btn.leave.active { background: var(--warning); border-color: var(--warning); color: #ffffff; }
 .absent-row { background: #fff5f5; }
 .absent-row:hover { background: #fdecec; }
+.leave-row { background: #fffbeb; }
+.leave-row:hover { background: #fef3c7; }
 
 .att-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
 
@@ -745,10 +748,10 @@ button { font-family: inherit; }
 .report-content { padding-bottom: 8px; }
 
 /* Report tables: N-column grids */
-.rep-4 { grid-template-columns: 1fr 90px 130px 110px; }
-.rep-5 { grid-template-columns: 120px 1fr 80px 80px 90px; }
-.rep-7 { grid-template-columns: 1.4fr 1fr 90px 90px 90px 90px 100px; }
-.rep-8 { grid-template-columns: 100px 90px 1.1fr 1.3fr 1.5fr 70px 70px 90px; }
+.rep-4 { grid-template-columns: 1fr 90px 180px 110px; }
+.rep-6 { grid-template-columns: 110px 1fr 70px 70px 70px 90px; }
+.rep-8 { grid-template-columns: 1.3fr 1fr 85px 90px 75px 75px 75px 100px; }
+.rep-9 { grid-template-columns: 100px 90px 1.1fr 1.3fr 1.4fr 60px 60px 60px 90px; }
 .rep-pct { font-weight: 700; font-variant-numeric: tabular-nums; }
 .rep-pct.ok, .ok { color: #15803d; font-weight: 600; }
 .rep-pct.mid { color: #d97706; }
@@ -816,7 +819,7 @@ button { font-family: inherit; }
 /* Tablet landscape & smaller desktops */
 @media (max-width: 1024px) {
   .charts-row { grid-template-columns: 1fr; }
-  .rep-8 { grid-template-columns: 90px 80px 1fr 1fr 90px 60px 60px 80px; }
+  .rep-9 { grid-template-columns: 90px 80px 1fr 1fr 90px 55px 55px 55px 80px; }
   .rf-range { margin-left: 0; }
 }
 
@@ -852,8 +855,8 @@ button { font-family: inherit; }
 /* Small phones / wide report tables become scrollable */
 @media (max-width: 640px) {
   .report-content .student-list { overflow-x: auto; }
-  .rep-4, .rep-5, .rep-7, .rep-8 { min-width: 600px; }
-  .rep-8 .rep-dept { display: inline; }
+  .rep-4, .rep-6, .rep-8, .rep-9 { min-width: 600px; }
+  .rep-9 .rep-dept { display: inline; }
   .reports-tabs { gap: 6px; }
   .login-gate { min-height: calc(100vh - 120px); }
 }

@@ -96,7 +96,7 @@
   function isLegacyDay(day) {
     if (!day || typeof day !== 'object') return false;
     if (day.rolls || day.slot) return false;
-    return Object.keys(day).some(function (k) { return /^\d+$/.test(k) && (day[k] === 'P' || day[k] === 'A'); });
+    return Object.keys(day).some(function (k) { return /^\d+$/.test(k) && (day[k] === 'P' || day[k] === 'A' || day[k] === 'L'); });
   }
 
   function allLectures() {
@@ -175,9 +175,13 @@
   }
 
   function lectureCounts(l) {
-    var p = 0, a = 0;
-    Object.keys(l.rolls).forEach(function (roll) { if (l.rolls[roll] === 'A') a++; else p++; });
-    return { p: p, a: a, t: p + a };
+    var p = 0, a = 0, lv = 0;
+    Object.keys(l.rolls).forEach(function (roll) {
+      if (l.rolls[roll] === 'A') a++;
+      else if (l.rolls[roll] === 'L') lv++;
+      else p++;
+    });
+    return { p: p, a: a, l: lv, t: p + a + lv };
   }
 
   function groupByClass(recs) {
@@ -361,21 +365,21 @@
     var byTeacher = {};
     recs.forEach(function (l) {
       var key = l.teacher || 'Unknown';
-      if (!byTeacher[key]) byTeacher[key] = { lectures: 0, p: 0, a: 0 };
+      if (!byTeacher[key]) byTeacher[key] = { lectures: 0, p: 0, a: 0, l: 0 };
       var c = lectureCounts(l);
-      byTeacher[key].lectures++; byTeacher[key].p += c.p; byTeacher[key].a += c.a;
+      byTeacher[key].lectures++; byTeacher[key].p += c.p; byTeacher[key].a += c.a; byTeacher[key].l += c.l;
     });
     var teacherNames = Object.keys(byTeacher).sort();
 
     var byClass = {};
     recs.forEach(function (l) {
-      if (!byClass[l.classKey]) byClass[l.classKey] = { dept: l.dept, course: l.course, p: 0, a: 0, lectures: 0 };
+      if (!byClass[l.classKey]) byClass[l.classKey] = { dept: l.dept, course: l.course, p: 0, a: 0, l: 0, lectures: 0 };
       var c = lectureCounts(l);
-      byClass[l.classKey].p += c.p; byClass[l.classKey].a += c.a; byClass[l.classKey].lectures++;
+      byClass[l.classKey].p += c.p; byClass[l.classKey].a += c.a; byClass[l.classKey].l += c.l; byClass[l.classKey].lectures++;
     });
     var classRows = Object.keys(byClass).map(function (k) {
       var r = byClass[k];
-      var pct = (r.p + r.a) ? r.p / (r.p + r.a) * 100 : 0;
+      var pct = (r.p + r.a + r.l) ? r.p / (r.p + r.a + r.l) * 100 : 0;
       return { key: k, dept: r.dept, course: r.course, pct: pct, lectures: r.lectures };
     }).sort(function (x, y) { return y.pct - x.pct; });
     var top = classRows.slice(0, 3);
@@ -387,7 +391,7 @@
         statCard('This Week', weeks, 'green', 'lectures') +
         statCard('This Month', months, 'purple', 'lectures') +
         statCard('Avg Attendance', avgPct.toFixed(1) + '%', 'amber', 'across range') +
-        statCard('Marks Marked', t, 'cyan', 'present + absent') +
+        statCard('Marks Marked', t, 'cyan', 'present + absent + leave') +
         statCard('Days Covered', Object.keys(daysCovered).length, 'rose', 'unique dates') +
       '</div>' +
 
@@ -405,15 +409,15 @@
       '<div class="section-title">Teacher Lecture Summary</div>' +
       '<div class="student-list">' +
         '<div class="student-header rep-4">' +
-          '<span>Teacher</span><span>Lectures</span><span>Present / Absent</span><span>Avg Attendance</span>' +
+          '<span>Teacher</span><span>Lectures</span><span>Present / Absent / Leave</span><span>Avg Attendance</span>' +
         '</div>' +
         (teacherNames.length ? teacherNames.map(function (n) {
           var r = byTeacher[n];
-          var pct = (r.p + r.a) ? r.p / (r.p + r.a) * 100 : 0;
+          var pct = (r.p + r.a + r.l) ? r.p / (r.p + r.a + r.l) * 100 : 0;
           return '<div class="student-row rep-4">' +
             '<span class="col-name">' + esc(n) + '</span>' +
             '<span>' + r.lectures + '</span>' +
-            '<span>' + r.p + ' / ' + r.a + '</span>' +
+            '<span>' + r.p + ' / ' + r.a + ' / ' + r.l + '</span>' +
             '<span class="rep-pct' + (pct >= 75 ? ' ok' : pct < 60 ? ' bad' : ' mid') + '">' + fmtPct(pct) + '</span>' +
           '</div>';
         }).join('') : emptyNoteRow('No lectures recorded in the selected range.')) +
@@ -459,24 +463,25 @@
       return;
     }
     var html = '<div class="student-list">' +
-      '<div class="student-header rep-7">' +
-        '<span>Class</span><span>Department</span><span>Students</span><span>Lectures</span><span>Present</span><span>Absent</span><span>Attendance</span>' +
+      '<div class="student-header rep-8">' +
+        '<span>Class</span><span>Department</span><span>Students</span><span>Lectures</span><span>Present</span><span>Absent</span><span>Leave</span><span>Attendance</span>' +
       '</div>';
 
     groups.forEach(function (g) {
       var enrolled = enrolledCount(g.dept, g.course);
-      var p = 0, a = 0, possible = 0;
-      g.lectures.forEach(function (l) { var c = lectureCounts(l); p += c.p; a += c.a; possible += c.t; });
+      var p = 0, a = 0, lv = 0, possible = 0;
+      g.lectures.forEach(function (l) { var c = lectureCounts(l); p += c.p; a += c.a; lv += c.l; possible += c.t; });
       var pct = possible ? p / possible * 100 : 0;
 
       html += '<details class="rep-details">' +
-        '<summary class="rep-summary student-row rep-7">' +
+        '<summary class="rep-summary student-row rep-8">' +
           '<span class="col-name">' + esc(g.course) + '</span>' +
           '<span>' + esc(g.dept) + '</span>' +
           '<span>' + enrolled + '</span>' +
           '<span>' + g.lectures.length + '</span>' +
           '<span class="ok">' + p + '</span>' +
           '<span class="bad">' + a + '</span>' +
+          '<span class="mid">' + lv + '</span>' +
           '<span class="rep-pct' + (pct >= 75 ? ' ok' : pct < 60 ? ' bad' : ' mid') + '">' + fmtPct(pct) + '</span>' +
         '</summary>' +
         '<div class="rep-detail-body">' + studentDetails(g.dept, g.course, g.lectures) + '</div>' +
@@ -490,26 +495,29 @@
     var per = {};
     lectures.forEach(function (l) {
       Object.keys(l.rolls).forEach(function (roll) {
-        var st = per[roll] || (per[roll] = { p: 0, a: 0 });
-        if (l.rolls[roll] === 'A') st.a++; else st.p++;
+        var st = per[roll] || (per[roll] = { p: 0, a: 0, l: 0 });
+        if (l.rolls[roll] === 'A') st.a++;
+        else if (l.rolls[roll] === 'L') st.l++;
+        else st.p++;
       });
     });
     var list = students.filter(function (s) { return s.dept === dept && s.course === course; })
       .sort(function (x, y) { return x.roll < y.roll ? -1 : 1; });
     if (!list.length) return '<div class="rep-empty">No students found.</div>';
     return '<div class="student-list">' +
-      '<div class="student-header rep-5">' +
-        '<span>Roll Number</span><span>Student Name</span><span>Present</span><span>Absent</span><span>Days</span>' +
+      '<div class="student-header rep-6">' +
+        '<span>Roll Number</span><span>Student Name</span><span>Present</span><span>Absent</span><span>Leave</span><span>Days</span>' +
       '</div>' +
       list.map(function (s) {
-        var st = per[s.roll] || { p: 0, a: 0 };
-        var days = st.p + st.a;
+        var st = per[s.roll] || { p: 0, a: 0, l: 0 };
+        var days = st.p + st.a + st.l;
         var pct = days ? st.p / days * 100 : 0;
-        return '<div class="student-row rep-5">' +
+        return '<div class="student-row rep-6">' +
           '<span class="col-roll">' + esc(s.roll) + '</span>' +
           '<span class="col-name">' + esc(s.name) + '</span>' +
           '<span>' + st.p + '</span>' +
           '<span>' + st.a + '</span>' +
+          '<span>' + st.l + '</span>' +
           '<span class="rep-pct' + (pct >= 75 ? ' ok' : pct < 60 ? ' bad' : ' mid') + '">' + fmtPct(pct) + '</span>' +
         '</div>';
       }).join('') +
@@ -520,13 +528,13 @@
   function renderLecture(el, recs) {
     if (!recs.length) { el.innerHTML = emptyNote(); return; }
     el.innerHTML = '<div class="student-list">' +
-      '<div class="student-header rep-8">' +
-        '<span>Date</span><span>Time</span><span>Teacher</span><span>Class</span><span>Subject</span><span>Present</span><span>Absent</span><span>Attendance</span>' +
+      '<div class="student-header rep-9">' +
+        '<span>Date</span><span>Time</span><span>Teacher</span><span>Class</span><span>Subject</span><span>Present</span><span>Absent</span><span>Leave</span><span>Attendance</span>' +
       '</div>' +
       recs.map(function (l) {
         var c = lectureCounts(l);
         var pct = c.t ? c.p / c.t * 100 : 0;
-        return '<div class="student-row rep-8">' +
+        return '<div class="student-row rep-9">' +
           '<span class="col-roll">' + esc(l.date) + '</span>' +
           '<span>' + esc((l.time || '').replace(/[()]/g, '')) + '</span>' +
           '<span class="col-name">' + esc(l.teacher || '—') + '</span>' +
@@ -534,6 +542,7 @@
           '<span>' + esc(l.subject || '—') + '</span>' +
           '<span class="ok">' + c.p + '</span>' +
           '<span class="bad">' + c.a + '</span>' +
+          '<span class="mid">' + c.l + '</span>' +
           '<span class="rep-pct' + (pct >= 75 ? ' ok' : pct < 60 ? ' bad' : ' mid') + '">' + fmtPct(pct) + '</span>' +
         '</div>';
       }).join('') +
@@ -577,34 +586,34 @@
     rows.push(['']);
 
     if (state.tab === 'summary') {
-      rows.push(['Teacher', 'Lectures', 'Present', 'Absent', 'Avg Attendance']);
+      rows.push(['Teacher', 'Lectures', 'Present', 'Absent', 'Leave', 'Avg Attendance']);
       var byTeacher = {};
       recs.forEach(function (l) {
         var key = l.teacher || 'Unknown';
-        if (!byTeacher[key]) byTeacher[key] = { lectures: 0, p: 0, a: 0 };
+        if (!byTeacher[key]) byTeacher[key] = { lectures: 0, p: 0, a: 0, l: 0 };
         var c = lectureCounts(l);
-        byTeacher[key].lectures++; byTeacher[key].p += c.p; byTeacher[key].a += c.a;
+        byTeacher[key].lectures++; byTeacher[key].p += c.p; byTeacher[key].a += c.a; byTeacher[key].l += c.l;
       });
       Object.keys(byTeacher).sort().forEach(function (n) {
         var r = byTeacher[n];
-        var pct = (r.p + r.a) ? (r.p / (r.p + r.a) * 100).toFixed(1) + '%' : '—';
-        rows.push([n, r.lectures, r.p, r.a, pct]);
+        var pct = (r.p + r.a + r.l) ? (r.p / (r.p + r.a + r.l) * 100).toFixed(1) + '%' : '—';
+        rows.push([n, r.lectures, r.p, r.a, r.l, pct]);
       });
     } else if (state.tab === 'student') {
-      rows.push(['Class', 'Department', 'Students', 'Lectures', 'Present', 'Absent', 'Attendance %']);
+      rows.push(['Class', 'Department', 'Students', 'Lectures', 'Present', 'Absent', 'Leave', 'Attendance %']);
       groupByClass(recs).forEach(function (g) {
         var enrolled = enrolledCount(g.dept, g.course);
-        var p = 0, a = 0;
-        g.lectures.forEach(function (l) { var c = lectureCounts(l); p += c.p; a += c.a; });
-        var pct = (p + a) ? (p / (p + a) * 100).toFixed(1) + '%' : '—';
-        rows.push([g.course, g.dept, enrolled, g.lectures.length, p, a, pct]);
+        var p = 0, a = 0, lv = 0;
+        g.lectures.forEach(function (l) { var c = lectureCounts(l); p += c.p; a += c.a; lv += c.l; });
+        var pct = (p + a + lv) ? (p / (p + a + lv) * 100).toFixed(1) + '%' : '—';
+        rows.push([g.course, g.dept, enrolled, g.lectures.length, p, a, lv, pct]);
       });
     } else {
-      rows.push(['Date', 'Time', 'Teacher', 'Class', 'Department', 'Subject', 'Present', 'Absent', 'Total', 'Attendance %']);
+      rows.push(['Date', 'Time', 'Teacher', 'Class', 'Department', 'Subject', 'Present', 'Absent', 'Leave', 'Total', 'Attendance %']);
       recs.forEach(function (l) {
         var c = lectureCounts(l);
         var pct = c.t ? (c.p / c.t * 100).toFixed(1) + '%' : '—';
-        rows.push([l.date, (l.time || '').replace(/[()]/g, ''), l.teacher || '—', l.course, l.dept, l.subject || '—', c.p, c.a, c.t, pct]);
+        rows.push([l.date, (l.time || '').replace(/[()]/g, ''), l.teacher || '—', l.course, l.dept, l.subject || '—', c.p, c.a, c.l, c.t, pct]);
       });
     }
 

@@ -322,6 +322,7 @@
         '<span class="att-spacer"></span>' +
         '<button type="button" class="btn-secondary btn-sm" id="att-all-p">All Present</button>' +
         '<button type="button" class="btn-secondary btn-sm" id="att-all-a">All Absent</button>' +
+        '<button type="button" class="btn-secondary btn-sm" id="att-all-l">All Leave</button>' +
       '</div>' +
       '<div class="student-list att-list">' +
         '<div class="student-header att-header">' +
@@ -334,6 +335,7 @@
             '<span class="att-toggle">' +
               '<button type="button" class="att-btn present" data-v="P">Present</button>' +
               '<button type="button" class="att-btn absent" data-v="A">Absent</button>' +
+              '<button type="button" class="att-btn leave" data-v="L">Leave</button>' +
             '</span>' +
           '</div>';
         }).join('') +
@@ -373,14 +375,20 @@
     function updateRow(row, v) {
       row.querySelector('.att-btn.present').classList.toggle('active', v === 'P');
       row.querySelector('.att-btn.absent').classList.toggle('active', v === 'A');
+      row.querySelector('.att-btn.leave').classList.toggle('active', v === 'L');
       row.classList.toggle('absent-row', v === 'A');
+      row.classList.toggle('leave-row', v === 'L');
     }
 
     function updateSummary() {
-      var p = 0, a = 0;
-      Object.keys(statuses).forEach(function (r) { if (statuses[r] === 'A') a++; else p++; });
+      var p = 0, a = 0, l = 0;
+      Object.keys(statuses).forEach(function (r) {
+        if (statuses[r] === 'A') a++;
+        else if (statuses[r] === 'L') l++;
+        else p++;
+      });
       var el = document.getElementById('att-summary');
-      if (el) el.textContent = 'Present: ' + p + '  \u00b7  Absent: ' + a + '  \u00b7  Total: ' + (p + a);
+      if (el) el.textContent = 'Present: ' + p + '  \u00b7  Absent: ' + a + '  \u00b7  Leave: ' + l + '  \u00b7  Total: ' + (p + a + l);
     }
 
     main.querySelectorAll('.att-row').forEach(function (row) {
@@ -406,6 +414,11 @@
       main.querySelectorAll('.att-row').forEach(function (row) { updateRow(row, 'A'); });
       updateSummary();
     });
+    main.querySelector('#att-all-l').addEventListener('click', function () {
+      setAll('L');
+      main.querySelectorAll('.att-row').forEach(function (row) { updateRow(row, 'L'); });
+      updateSummary();
+    });
 
     main.querySelector('#att-save').addEventListener('click', saveRecord);
     main.querySelector('#att-export').addEventListener('click', function () { exportCsv(list, statuses); });
@@ -427,16 +440,19 @@
     if (!store[key]) store[key] = {};
     if (!store[key][state.date]) store[key][state.date] = {};
     var rec = {};
-    var p = 0, a = 0;
+    var p = 0, a = 0, l = 0;
     list.forEach(function (s) {
-      var v = state.statuses[s.roll] === 'A' ? 'A' : 'P';
+      var v = state.statuses[s.roll] === 'A' ? 'A' : (state.statuses[s.roll] === 'L' ? 'L' : 'P');
       rec[s.roll] = v;
-      if (v === 'A') a++; else p++;
+      if (v === 'A') a++;
+      else if (v === 'L') l++;
+      else p++;
     });
     store[key][state.date][state.slot] = {
       teacher: session ? session.name : null,
       subject: slotSubject(state.slot, state.dept, state.course) || null,
       time: slotTime(state.slot),
+      submittedAt: new Date().toISOString(),
       rolls: rec
     };
     if (!window.LKCStorage.put(store)) {
@@ -444,7 +460,7 @@
       return;
     }
     var label = state.slot !== 'general' ? ' \u00b7 ' + state.slot : '';
-    var msg = 'Attendance saved for ' + state.date + label + ' \u00b7 Present: ' + p + ', Absent: ' + a;
+    var msg = 'Attendance saved for ' + state.date + label + ' \u00b7 Present: ' + p + ', Absent: ' + a + ', Leave: ' + l;
     if (window.LKCStorage && window.LKCStorage.isServerUp && window.LKCStorage.isServerUp() === false) {
       msg += '  (Saved on this device only \u2014 server unreachable; other teachers won\u2019t see this. Deploy server.js to share data.)';
     }
@@ -457,7 +473,7 @@
       rows.push([
         s.roll,
         s.name,
-        statuses[s.roll] === 'A' ? 'Absent' : 'Present',
+        statuses[s.roll] === 'A' ? 'Absent' : (statuses[s.roll] === 'L' ? 'Leave' : 'Present'),
         state.date,
         state.slot,
         slotSubject(state.slot, state.dept, state.course),
