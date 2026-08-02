@@ -95,8 +95,12 @@
 
   function isLegacyDay(day) {
     if (!day || typeof day !== 'object') return false;
-    if (day.rolls || day.slot) return false;
-    return Object.keys(day).some(function (k) { return /^\d+$/.test(k) && (day[k] === 'P' || day[k] === 'A' || day[k] === 'L'); });
+    // Legacy: day has numeric keys (roll numbers) with P/A/L values
+    // New format: day has composite keys (date|slot) with slotData objects
+    return Object.keys(day).some(function (k) {
+      var v = day[k];
+      return /^\d+$/.test(k) && (v === 'P' || v === 'A' || v === 'L');
+    });
   }
 
   function allLectures() {
@@ -106,26 +110,23 @@
       var i = classKey.indexOf('|');
       var dept = classKey.slice(0, i);
       var course = classKey.slice(i + 1);
-      var dates = store[classKey];
-      Object.keys(dates).forEach(function (date) {
-        var day = dates[date];
-        var norm;
-        if (isLegacyDay(day)) norm = { general: { teacher: null, subject: null, time: null, rolls: day } };
-        else norm = day;
-        Object.keys(norm).forEach(function (slot) {
-          var e = norm[slot];
-          if (!e || !e.rolls || typeof e.rolls !== 'object') return;
-          recs.push({
-            classKey: classKey,
-            dept: dept,
-            course: course,
-            date: date,
-            slot: slot,
-            teacher: e.teacher || '',
-            subject: e.subject || '',
-            time: e.time || '',
-            rolls: e.rolls
-          });
+      var slots = store[classKey];
+      Object.keys(slots).forEach(function (compositeKey) {
+        var parts = compositeKey.split('|');
+        var date = parts[0];
+        var slot = parts.slice(1).join('|');
+        var e = slots[compositeKey];
+        if (!e || typeof e !== 'object') return;
+        recs.push({
+          classKey: classKey,
+          dept: dept,
+          course: course,
+          date: date,
+          slot: slot,
+          teacher: e.teacher || '',
+          subject: e.subject || '',
+          time: e.time || '',
+          rolls: e.rolls
         });
       });
     });

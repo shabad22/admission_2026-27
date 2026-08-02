@@ -449,7 +449,9 @@
       else if (v === 'L') l++;
       else p++;
     });
-    store[key][state.date][state.slot] = {
+    var compositeKey = state.date + '|' + state.slot;
+    if (!store[key]) store[key] = {};
+    store[key][compositeKey] = {
       teacher: session ? session.name : null,
       subject: slotSubject(state.slot, state.dept, state.course) || null,
       time: slotTime(state.slot),
