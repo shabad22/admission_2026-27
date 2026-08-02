@@ -82,10 +82,11 @@ var server = http.createServer(function (req, res) {
   }
 
   if (pathname === '/api/attendance' && req.method === 'POST') {
-    var body = '';
-    req.on('data', function (c) { body += c; });
+    var chunks = [];
+    req.on('data', function (c) { chunks.push(c); });
     req.on('end', function () {
       try {
+        var body = Buffer.concat(chunks).toString('utf8').trim();
         var data = JSON.parse(body || '{}');
         var store = deepMerge(readStore(), data.records || {});
         writeStore(store);
