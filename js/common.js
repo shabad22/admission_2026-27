@@ -54,5 +54,61 @@ window.LKCUtil = {
       .replace(/"/g, '"');
   },
 
-  getMain: function () { return document.getElementById('main-content'); }
+  getMain: function () { return document.getElementById('main-content'); },
+
+  /* ── Theme Management ── */
+  THEME_KEY: 'lkc-theme',
+  THEMES: ['light', 'dark', 'system'],
+
+  getTheme: function () {
+    try {
+      return localStorage.getItem(window.LKCUtil.THEME_KEY) || 'system';
+    } catch (e) { return 'system'; }
+  },
+
+  setTheme: function (theme) {
+    if (!window.LKCUtil.THEMES.includes(theme)) theme = 'system';
+    try { localStorage.setItem(window.LKCUtil.THEME_KEY, theme); } catch (e) {}
+    window.LKCUtil.applyTheme(theme);
+  },
+
+  applyTheme: function (theme) {
+    var root = document.documentElement;
+    root.classList.remove('theme-light', 'theme-dark');
+    if (theme === 'system') {
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (prefersDark) root.classList.add('theme-dark');
+    } else if (theme === 'dark') {
+      root.classList.add('theme-dark');
+    } else {
+      root.classList.add('theme-light');
+    }
+    window.LKCUtil.updateThemeIcons(theme);
+  },
+
+  updateThemeIcons: function (theme) {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    btn.setAttribute('data-theme', theme);
+    var title = theme === 'system' ? 'System preference' : theme.charAt(0).toUpperCase() + theme.slice(1);
+    btn.title = 'Current: ' + title + ' (click to change)';
+  },
+
+  initTheme: function () {
+    var theme = window.LKCUtil.getTheme();
+    window.LKCUtil.applyTheme(theme);
+    var btn = document.getElementById('theme-toggle');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        var current = window.LKCUtil.getTheme();
+        var idx = window.LKCUtil.THEMES.indexOf(current);
+        var next = window.LKCUtil.THEMES[(idx + 1) % window.LKCUtil.THEMES.length];
+        window.LKCUtil.setTheme(next);
+      });
+    }
+    // Listen for system preference changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+      if (window.LKCUtil.getTheme() === 'system') window.LKCUtil.applyTheme('system');
+    });
+  }
 };

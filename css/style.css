@@ -29,7 +29,7 @@
   --info: #0891b2;
   --info-light: #cffafe;
 
-  /* ── Neutral ── */
+  /* ── Neutral (Light theme defaults) ── */
   --bg: #f8fafc;
   --surface: #ffffff;
   --surface-elevated: #ffffff;
@@ -96,9 +96,28 @@
   --topbar-border: rgba(255, 255, 255, 0.08);
 }
 
-/* Dark mode support */
+/* Dark theme (explicit class) */
+.theme-dark {
+  --bg: #0b1020;
+  --surface: #111827;
+  --surface-elevated: #1e293b;
+  --surface-hover: #1f2937;
+  --text: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
+  --border: #1e293b;
+  --border-strong: #334155;
+  --primary-light: #1e3a5f;
+  --accent-light: #2e1065;
+  --success-light: #064e3b;
+  --danger-light: #450a0a;
+  --warning-light: #451a03;
+}
+
+/* System preference fallback (when no explicit theme set) */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.theme-light) {
     --bg: #0b1020;
     --surface: #111827;
     --surface-elevated: #1e293b;
@@ -106,6 +125,7 @@
     --text: #f1f5f9;
     --text-secondary: #cbd5e1;
     --text-muted: #64748b;
+    --text-inverse: #ffffff;
     --border: #1e293b;
     --border-strong: #334155;
     --primary-light: #1e3a5f;
@@ -233,6 +253,44 @@ input, select, textarea { font-family: inherit; }
 .user-btn:hover { background: rgba(139, 92, 246, 0.12); }
 .dash-btn { border-color: rgba(34, 197, 94, 0.4); color: #86efac; }
 .dash-btn:hover { background: rgba(34, 197, 94, 0.12); }
+
+/* Theme Toggle Button */
+.theme-toggle {
+  width: 44px; height: 44px; padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  transition: all var(--transition-fast);
+}
+.theme-toggle:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.2); }
+.theme-toggle:active { background: rgba(255, 255, 255, 0.04); }
+.theme-toggle:focus-visible { outline: 2px solid #60a5fa; outline-offset: 2px; }
+.theme-toggle .theme-icon-light,
+.theme-toggle .theme-icon-dark,
+.theme-toggle .theme-icon-system {
+  position: absolute; font-size: 18px; opacity: 0; transform: scale(0.8);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  pointer-events: none;
+}
+.theme-toggle[data-theme="light"] .theme-icon-light { opacity: 1; transform: scale(1); }
+.theme-toggle[data-theme="dark"] .theme-icon-dark { opacity: 1; transform: scale(1); }
+.theme-toggle[data-theme="system"] .theme-icon-system { opacity: 1; transform: scale(1); }
+
+/* Light theme overrides for theme toggle */
+.theme-light .theme-toggle,
+.theme-dark .theme-toggle {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+.theme-light .theme-toggle:hover,
+.theme-dark .theme-toggle:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
 
 /* ══════ MAIN CONTENT ══════ */
 #main-content {

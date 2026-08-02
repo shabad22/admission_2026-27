@@ -11,6 +11,9 @@
     searchDropdown = document.getElementById('search-dropdown');
     backBtn = document.getElementById('back-btn');
 
+    /* Initialize theme (must run early to avoid flash) */
+    window.LKCUtil.initTheme();
+
     var data = window.__DATA__;
     if (data && data.students && data.students.length) {
       students = data.students;
