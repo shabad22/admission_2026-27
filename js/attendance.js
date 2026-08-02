@@ -438,7 +438,6 @@
     var store = getAttendanceStore();
     var key = getClassKey(state.dept, state.course);
     if (!store[key]) store[key] = {};
-    if (!store[key][state.date]) store[key][state.date] = {};
     var rollsStr = '';
     var p = 0, a = 0, l = 0;
     list.forEach(function (s) {
